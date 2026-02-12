@@ -1,0 +1,39 @@
+ForexSystem_Project/
+│
+├── 📂 shared/                   # (A PONTE) Código comum aos dois sistemas
+│   ├── __init__.py
+│   ├── config.py                # Configurações gerais (pares, credenciais)
+│   ├── database_handler.py      # Script que lê/escreve no banco de dados
+│   └── logger.py                # Padronização de logs
+│
+├── 📂 data/                     # (A MEMÓRIA) Onde os dados persistem
+│   ├── trading_history.db       # Histórico de ordens (SQLite)
+│   └── market_sentiment.db      # Onde o futuro Agente de Notícias escreverá
+│
+├── 📂 logs/                     # Arquivos de texto com o registro de erros/ações
+│
+│   # --- FASE 1: O SEU FOCO AGORA ---
+├── 📂 bot_technical_trader/     # O "Executor" (Analisa Gráfico e Opera)
+│   ├── __init__.py
+│   ├── main_trader.py           # O arquivo que você executa para operar
+│   │
+│   ├── 📂 connections/          # Fala com a corretora
+│   │   └── mt5_client.py        # Wrapper do MetaTrader5
+│   │
+│   ├── 📂 analysis/             # Matemática Pura (Cérebro Lógico)
+│   │   ├── indicators.py        # Cálculos (RSI, Médias, MACD)
+│   │   └── patterns.py          # Reconhecimento de padrões (Candles)
+│   │
+│   └── 📂 strategy/             # Tomada de Decisão
+│       ├── entry_rules.py       # "Se RSI < 30 e Preço > Média..."
+│       ├── exit_rules.py        # Stop Loss e Take Profit
+│       └── risk_manager.py      # Cálculo do tamanho do lote
+│
+│   # --- FASE 2: O FUTURO (Pode ficar vazio por enquanto) ---
+├── 📂 agent_news_sentiment/     # O "Observador" (Lê Notícias)
+│   ├── __init__.py
+│   ├── main_scrapper.py         # O arquivo que rodará em background
+│   ├── 📂 sources/              # Conexões com sites/APIs
+│   └── 📂 nlp_engine/           # Processamento de Linguagem Natural
+│
+└── requirements.txt             # Lista de bibliotecas necessárias

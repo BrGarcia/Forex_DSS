@@ -1,0 +1,19 @@
+# --- Infraestrutura e Configuração ---
+python-dotenv       # Carrega variáveis do arquivo .env (Segurança)
+requests            # Para fazer requisições HTTP (APIs de Notícias - Fase 2)
+schedule            # Agendador de tarefas (ex: rodar a cada 15 min)
+
+# --- Conexão e Dados de Mercado ---
+##MetaTrader5         # Conector oficial (Atenção: Requer Windows)##
+yfinance            # Baixa dados históricos do Yahoo Finance (Ótimo para Backtest)
+
+# --- Processamento de Dados ---
+pandas              # O "Excel" do Python (DataFrames)
+numpy               # Cálculos matemáticos de alta performance
+
+# --- Análise Técnica (O Cérebro) ---
+pandas_ta           # Calcula RSI, MACD, Médias Móveis automaticamente
+
+# --- Visualização e Relatórios (Backtest) ---
+matplotlib          # Base para gráficos
+mplfinance          # Cria gráficos de Candlestick (Velas) profissionais
