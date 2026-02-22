@@ -1,64 +1,63 @@
+import os
 import time
-import sys
-import signal
-from shared.config import Config
-from shared.logger import setup_logger
-from bot_technical_trader.main_trader import TechnicalTrader
+from data_feeds.price_api import PriceDataFeed
+from analysis.technical import TechnicalAnalyzer
+from analysis.charting import ChartGenerator
+from strategy.signal_generator import SignalGenerator
 
-# 1. Configuração Inicial de Logs
-# O logger "root" que vai capturar eventos gerais do sistema
-log = setup_logger("MainSystem")
+def limpar_ecra():
+    os.system('cls' if os.name == 'nt' else 'clear')
 
-def graceful_exit(signum, frame):
-    """
-    Função para desligar o robô com segurança quando você aperta CTRL+C.
-    Evita que o bot morra no meio de uma operação de envio de ordem.
-    """
-    log.warning("Recebido sinal de encerramento (CTRL+C). Fechando conexões...")
-    # Aqui você poderia adicionar lógica para fechar posições abertas se quisesse
-    sys.exit(0)
+def executar_analise(par="EURUSD"):
+    print(f"\n⏳ Consultando o mercado em tempo real para {par}...")
+    try:
+        # 1. Obter Dados
+        alimentador = PriceDataFeed(par)
+        dados_brutos = alimentador.obter_historico_velas(periodo="20d", intervalo="15m")
+
+        # 2. Processar Matemática Técnica
+        analista = TechnicalAnalyzer(dados_brutos)
+        dados_enriquecidos = analista.calcular_indicadores()
+
+        # 3. Gerar Sugestão Estratégica
+        estrategista = SignalGenerator(dados_enriquecidos)
+        
+        # Imprimir Painéis
+        limpar_ecra()
+        print(analista.gerar_resumo_atual())
+        print(estrategista.analisar_e_sugerir())
+
+        # 4. Gerar Gráfico
+        nome_ficheiro = f"analise_grafica_{par}.png"
+        gerador = ChartGenerator(dados_enriquecidos, par)
+        gerador.salvar_grafico(filename=nome_ficheiro)
+        print(f"🖼️  Gráfico atualizado com sucesso: {nome_ficheiro}")
+
+    except Exception as e:
+        print(f"❌ Erro ao analisar {par}: {e}")
 
 def main():
-    log.info(f"--- INICIANDO FOREX ADVISOR [Versão: {Config.VERSION}] ---")
-    log.info(f"Modo: {'LIVE TRADING' if Config.LIVE_MODE else 'PAPER TRADING'}")
+    limpar_ecra()
+    print("==================================================")
+    print("🤖 FOREX ADVISOR - MODO BOT INTERATIVO INICIADO")
+    print("==================================================")
+    print("O seu assistente está online e a aguardar ordens.")
     
-    # 2. Instancia o Bot Técnico (O "Operário")
-    # A classe TechnicalTrader deve estar definida dentro da pasta do bot
-    trader = TechnicalTrader()
-    
-    # 3. Tentativa de Conexão Inicial (MetaTrader 5)
-    if not trader.connect():
-        log.critical("Falha crítica ao conectar com a corretora. Encerrando.")
-        sys.exit(1)
-        
-    log.info("Sistema conectado e pronto. Iniciando loop principal...")
-
-    # 4. O Loop Infinito (Heartbeat)
+    # O Loop Infinito (O coração do Bot)
     while True:
-        try:
-            # Verifica se é hora de operar (ex: mercado está aberto?)
-            # Esta lógica pode estar dentro do trader ou aqui fora
-            
-            # --- EXECUTA A ESTRATÉGIA ---
-            trader.run_cycle() 
-            
-            # --- ESPERA INTELIGENTE ---
-            # O bot não precisa rodar a cada milissegundo. 
-            # Se o timeframe é M15, ele pode dormir alguns segundos.
-            time.sleep(1) 
+        print("\n" + "="*50)
+        print("Opções:")
+        print(" [Enter] Atualizar análise agora")
+        print(" [S] Sair do programa")
+        comando = input("👉 O que deseja fazer? ").strip().lower()
 
-        except KeyboardInterrupt:
-            graceful_exit(None, None)
-            
-        except Exception as e:
-            # Se der um erro não tratado, o bot não deve fechar sozinho,
-            # ele deve registrar o erro e tentar continuar (ou parar se for grave).
-            log.error(f"Erro não tratado no Loop Principal: {e}", exc_info=True)
-            time.sleep(5) # Espera um pouco antes de tentar de novo para não floodar o log
+        if comando == 's':
+            print("\nDesligando o Advisor... Até logo!")
+            break
+        elif comando == '':
+            executar_analise("EURUSD")
+        else:
+            print("❌ Comando não reconhecido. Pressione Enter para analisar ou 'S' para sair.")
 
 if __name__ == "__main__":
-    # Registra o sinal de saída (CTRL+C)
-    signal.signal(signal.SIGINT, graceful_exit)
-    signal.signal(signal.SIGTERM, graceful_exit)
-    
     main()
