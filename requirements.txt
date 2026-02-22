@@ -2,6 +2,3 @@ yfinance
 pandas
 pandas_ta
 mplfinance
-
-#   pip install yfinance
-#pip install -r requirements.txt
