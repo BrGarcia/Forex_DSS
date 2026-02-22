@@ -1,3 +1,4 @@
+cat << 'EOF' > README.md
 # 📈 Forex Advisor - Decision Support System (DSS)
 
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
@@ -22,7 +23,6 @@ O foco principal da arquitetura é ser **Agnóstico de Plataforma**, rodando nat
 
 O projeto utiliza uma arquitetura modular e desacoplada:
 
-```text
 ForexAdvisor_DSS/
 ├── shared/               # Configurações globais, sistema de logs e constantes
 ├── data_feeds/           # Conectores de APIs (Yahoo Finance, Calendário Econômico)
@@ -32,3 +32,42 @@ ForexAdvisor_DSS/
 ├── .env                  # Variáveis de ambiente e chaves de API (Não versionado)
 ├── requirements.txt      # Dependências do projeto
 └── main_advisor.py       # Arquivo de execução principal (Terminal Dashboard)
+
+## 🛠️ Instalação e Configuração
+
+### Pré-requisitos
+- **Python 3.10** ou superior.
+- Git.
+
+### Passo a Passo
+
+1. **Clone o repositório:**
+   git clone https://github.com/seu-usuario/forex-advisor-dss.git
+   cd forex-advisor-dss
+
+2. **Crie um ambiente virtual (Recomendado):**
+   python -m venv venv
+   source venv/bin/activate
+
+3. **Instale as dependências:**
+   pip install -r requirements.txt
+
+4. **Configure as Variáveis de Ambiente:**
+   Crie um arquivo chamado `.env` na raiz do projeto contendo suas configurações.
+
+## 💻 Como Usar
+
+Para iniciar o painel de análise no seu terminal, basta executar o orquestrador principal:
+
+python main_advisor.py
+
+O sistema fará o download das últimas cotações, processará os motores de análise e exibirá o painel atualizado no seu terminal.
+
+## 👨‍💻 Autor
+
+**Bruno Garcia**
+- Projeto desenvolvido para auxiliar na tomada de decisão quantitativa e qualitativa no mercado de moedas.
+
+---
+**⚠️ Aviso Legal:** *Este software é um projeto educacional e de pesquisa quantitativa. Ele fornece análises baseadas em dados históricos e probabilidade estatística, o que não constitui aconselhamento financeiro. O mercado Forex envolve alto risco. O autor não se responsabiliza por perdas financeiras decorrentes do uso desta ferramenta.*
+EOF
