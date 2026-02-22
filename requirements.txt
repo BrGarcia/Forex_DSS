@@ -1,6 +1,7 @@
 yfinance
 pandas
-pandas-ta
-matplotlib
+pandas_ta
 mplfinance
-EOF
+
+#   pip install yfinance
+#pip install -r requirements.txt
