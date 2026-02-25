@@ -1,0 +1,34 @@
+classDiagram
+    class Main {
+        +main()
+    }
+
+    class ForexBot {
+        -String par
+        +executar_ciclo()
+    }
+
+    class PriceDataFeed {
+        +obter_velas_tempo_real()
+    }
+
+    class FundamentalAnalyzer {
+        -API_News_Key
+        +buscar_calendario_hoje()
+        +verificar_risco_noticia() : Boolean
+    }
+
+    class TechnicalAnalyzer {
+        +calcular_indicadores()
+    }
+
+    class SignalGenerator {
+        +gerar_gatilho_tecnico()
+        +validar_com_fundamental(sinal, risco_noticia)
+    }
+
+    Main --> ForexBot
+    ForexBot --> PriceDataFeed
+    ForexBot --> FundamentalAnalyzer : "Há perigo agora?"
+    ForexBot --> TechnicalAnalyzer
+    ForexBot --> SignalGenerator : "Cruza dados"
