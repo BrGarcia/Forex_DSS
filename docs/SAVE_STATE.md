@@ -1,28 +1,26 @@
 ---
-Status: 🟢 FASE 1.1 CONCLUÍDA (Estabilização & Confiabilidade)
+Status: 🟢 FASE 2 CONCLUÍDA (Monitoramento Multi-Par & Fundamental Inicial)
 Última Atualização: 2026-04-06
-Tags: #Python #Trading #Quant #Testado #Estável
+Tags: #Python #Trading #MultiPair #Fundamental #LoteDinamico
 ---
 
 ### --- SAVE STATE ---
 
 - **Status Atual:** 
-    - [x] Motor técnico calculando RSI, EMAs, Bollinger Bands e ATR.
-    - [x] Motor de confluência gerando sinais de Compra/Venda com SL/TP dinâmicos (baseados em ATR).
-    - [x] Contexto de sessões globais (Londres, NY, Tóquio) dinâmico via `pytz` (compatível com DST).
-    - [x] Dashboard CLI com Radar em tempo real e suporte total a Windows (msvcrt).
-    - [x] Sistema de logs centralizado (`shared/logger.py`) com auditoria de erros.
-    - [x] Otimização de busca de dados no `yfinance` para menor latência.
-    - [x] Malha de testes automatizados (`pytest`) com cobertura da lógica central.
+    - [x] Monitoramento simultâneo de múltiplos pares (EURUSD, GBPUSD, USDJPY, AUDUSD).
+    - [x] Configuração dinâmica de pares e conta via `pairs.json`.
+    - [x] Radar CLI evoluído para exibir status compacto de múltiplos ativos.
+    - [x] Sistema de cálculo de lote dinâmico baseado em risco de conta (1%) e volatilidade (ATR).
+    - [x] Motor Fundamentalista Inicial (`FundamentalAnalyzer`) com alertas de notícias de alto impacto.
+    - [x] Relatórios detalhados com suporte a seleção de par e integração de notícias.
 
-- **Dívida Técnica Resolvida (REVISAO.MD):**
-    - [x] Horários de sessão fixos em UTC -> Agora dinâmicos via timezone.
-    - [x] Tratamento de erros silencioso no radar -> Agora explícito e logado.
-    - [x] Implementação do sistema de logs centralizado -> OK.
-    - [x] Arquivos órfãos/vazios -> Removidos ou preenchidos com infraestrutura básica.
-    - [x] Ineficiência no `obter_cotacao_atual` -> Otimizado.
+- **Fase 2 - Objetivos Cumpridos:**
+    - [x] Configuração Dinâmica (`pairs.json`).
+    - [x] Scanner em Tempo Real (Multi-Radar).
+    - [x] Gestão de Risco por Conta (Lote Financeiro).
+    - [x] Motor Fundamentalista Inicial (Alertas de Eventos).
 
-- **Próximo Passo Imediato (Fase 2):** 
-    - Implementar suporte dinâmico a múltiplos pares de moedas (Monitoramento Simultâneo).
-    - Iniciar Motor Fundamentalista (Integração com Calendário Econômico / Investing.com).
-    - Refinar gestão de risco com cálculo de lote baseado no balanço da conta (Account Balance).
+- **Próximo Passo Imediato (Fase 3):** 
+    - Implementar a Interface Web (FastAPI + HTMX + Lightweight Charts).
+    - Refatorar `PriceDataFeed` para suportar WebSockets se possível ou polling otimizado.
+    - Adicionar suporte a Backtesting básico para validar a estratégia Sniper em múltiplos pares.

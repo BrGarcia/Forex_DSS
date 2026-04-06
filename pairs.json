@@ -1,0 +1,13 @@
+{
+    "pairs": [
+        "EURUSD",
+        "GBPUSD",
+        "USDJPY",
+        "AUDUSD"
+    ],
+    "account": {
+        "balance": 1000.0,
+        "currency": "USD",
+        "risk_percentage": 0.01
+    }
+}
