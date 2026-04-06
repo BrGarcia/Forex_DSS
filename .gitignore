@@ -4,7 +4,6 @@ __pycache__/
 *$py.class
 *.so
 .Python
-env/
 build/
 develop-eggs/
 dist/
@@ -21,23 +20,20 @@ wheels/
 .installed.cfg
 *.egg
 
-# Ambientes Virtuais
+# Environments
+.env
 .venv
+env/
 venv/
 ENV/
-
-# Configurações Sensíveis
-.env
-
-# Logs e Dados do Projeto
-logs/
-data/*.db
-data/*.sqlite
-*.log
-analise_*.png
-*.png
 
 # IDEs
 .vscode/
 .idea/
-.DS_Store
+
+# Project Specific
+data/*.csv
+data/*.json
+database.db
+*.log
+analise_grafica_*.png

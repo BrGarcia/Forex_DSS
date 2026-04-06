@@ -14,16 +14,21 @@ class PriceDataFeed:
 
     def obter_cotacao_atual(self) -> float:
         """
-        Retorna apenas o preço de fechamento mais recente.
+        Retorna apenas o preço de fechamento mais recente de forma eficiente.
         """
         ativo = yf.Ticker(self.ticker)
-        # Puxa o gráfico de 1 dia, em velas de 1 minuto
-        dados = ativo.history(period="1d", interval="1m")
+        # Puxa apenas o último dia com velas de 1 minuto, limitando a 1 vela
+        dados = ativo.history(period="1d", interval="1m").tail(1)
         
         if dados.empty:
-            raise ValueError(f"Não foi possível obter dados para {self.symbol_raw}")
+            # Fallback: tenta obter via fast_info se disponível (mais rápido)
+            try:
+                preco_atual = ativo.fast_info['lastPrice']
+                return round(preco_atual, 5)
+            except:
+                raise ValueError(f"Não foi possível obter dados para {self.symbol_raw}")
             
-        # Pega o preço de fechamento ('Close') da última linha ([-1])
+        # Pega o preço de fechamento ('Close') da última linha
         preco_atual = dados['Close'].iloc[-1]
         return round(preco_atual, 5)
 

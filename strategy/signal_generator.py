@@ -27,6 +27,9 @@ class SignalGenerator:
 
         margem_bb = preco_atual * 0.0005 
 
+        atr = ultima_vela.get('ATRr_14', 0.0015) # Default se não houver ATR
+        if atr == 0: atr = 0.0015
+
         sinal = "ESPERAR (Mercado Neutro)"
         lote_sugerido = 0.01 # Começando com o mínimo absoluto para segurança
         stop_loss = 0.0
@@ -35,16 +38,18 @@ class SignalGenerator:
         # Lógica do SINAL DE COMPRA (Sniper)
         if (ema_20 > ema_200) and (rsi < 40) and (preco_atual <= bb_inferior + margem_bb):
             sinal = "COMPRAR 🟢"
-            # Define Stop Loss abaixo do fundo recente (aprox. 15 pips para EURUSD)
-            stop_loss = preco_atual - 0.0015
-            # Define Take Profit com base na relação Risco/Retorno (aprox 30 pips)
-            take_profit = preco_atual + (0.0015 * self.rr_ratio)
+            # Define Stop Loss baseado na volatilidade real (1.5x ATR)
+            distancia_sl = atr * 1.5
+            stop_loss = preco_atual - distancia_sl
+            # Define Take Profit com base na relação Risco/Retorno
+            take_profit = preco_atual + (distancia_sl * self.rr_ratio)
 
         # Lógica do SINAL DE VENDA (Sniper)
         elif (ema_20 < ema_200) and (rsi > 60) and (preco_atual >= bb_superior - margem_bb):
             sinal = "VENDER 🔴"
-            stop_loss = preco_atual + 0.0015
-            take_profit = preco_atual - (0.0015 * self.rr_ratio)
+            distancia_sl = atr * 1.5
+            stop_loss = preco_atual + distancia_sl
+            take_profit = preco_atual - (distancia_sl * self.rr_ratio)
 
         # Se não há sinal, os preços de SL e TP ficam zerados
         str_sl = f"{stop_loss:.5f}" if stop_loss > 0 else "N/A"

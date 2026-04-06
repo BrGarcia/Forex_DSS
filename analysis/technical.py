@@ -16,6 +16,9 @@ class TechnicalAnalyzer:
         
         # NOVO: Calcula as Bandas de Bollinger (20 períodos, 2 Desvios Padrão)
         self.df.ta.bbands(length=20, std=2, append=True)
+
+        # NOVO: Calcula o ATR (Average True Range) para volatilidade
+        self.df.ta.atr(length=14, append=True)
         
         self.df.dropna(inplace=True)
         return self.df

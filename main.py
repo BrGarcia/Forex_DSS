@@ -1,6 +1,23 @@
 import sys
-import select
+import time
 from app.forex_bot import ForexBot
+
+# Compatibilidade para Windows e Linux/macOS
+if sys.platform == "win32":
+    import msvcrt
+    def escutar_teclado():
+        if msvcrt.kbhit():
+            # Limpa o buffer e retorna o comando
+            char = msvcrt.getch().decode('utf-8', errors='ignore').lower()
+            return char
+        return None
+else:
+    import select
+    def escutar_teclado():
+        tecla, _, _ = select.select([sys.stdin], [], [], 0.1)
+        if tecla:
+            return sys.stdin.readline().strip().lower()
+        return None
 
 def main():
     bot = ForexBot("EURUSD")
@@ -9,7 +26,7 @@ def main():
     print("==================================================")
     print("🤖 FOREX ADVISOR - MODO RADAR ATIVO")
     print("==================================================")
-    print("👉 [ENTER]: Relatório Completo | [S]: Sair\n")
+    print("👉 [ENTER/QUALQUER TECLA]: Relatório | [S]: Sair\n")
 
     intervalo = 60
     contador = intervalo 
@@ -20,16 +37,16 @@ def main():
             contador = 0
         
         # Escuta o teclado sem travar o programa
-        tecla, _, _ = select.select([sys.stdin], [], [], 1)
+        cmd = escutar_teclado()
         
-        if tecla:
-            cmd = sys.stdin.readline().strip().lower()
+        if cmd:
             if cmd == 's': break
             else:
                 bot.exibir_relatorio_completo()
                 contador = intervalo # Reinicia o radar logo após o relatório
-        else:
-            contador += 1
+        
+        time.sleep(1)
+        contador += 1
 
 if __name__ == "__main__":
     main()

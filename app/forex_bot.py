@@ -1,33 +1,52 @@
 import sys
 import os
 from datetime import datetime, timezone
+import pytz
 from data_feeds.price_api import PriceDataFeed
 from analysis.technical import TechnicalAnalyzer
 from analysis.charting import ChartGenerator
 from strategy.signal_generator import SignalGenerator
 
+from shared.logger import logger
+
 class ForexBot:
     def __init__(self, par="EURUSD"):
         self.par = par
         self.ultimo_preco = 0.0
+        logger.info(f"ForexBot inicializado para {self.par}")
 
     def limpar_ecra(self):
         os.system('cls' if os.name == 'nt' else 'clear')
 
     def obter_contexto_sessao(self, df):
-        """Identifica a sessão atual e calcula o Range Asiático (00:00 - 08:00 UTC)"""
-        agora_utc = datetime.now(timezone.utc)
-        hora_utc = agora_utc.hour
+        """Identifica a sessão atual usando fusos horários reais (NY e Londres)"""
+        # Fusos horários de referência
+        tz_ny = pytz.timezone('America/New_York')
+        tz_london = pytz.timezone('Europe/London')
+        tz_tokyo = pytz.timezone('Asia/Tokyo')
         
-        # 1. Identificar Sessão Atual
-        if 0 <= hora_utc < 8: sessao = "ASIÁTICA 🇯🇵"
-        elif 8 <= hora_utc < 13: sessao = "EUROPEIA 🇪🇺 (Londres)"
-        elif 13 <= hora_utc < 17: sessao = "SOBREPOSIÇÃO 🇪🇺/🇺🇸 (Overlap)"
-        elif 17 <= hora_utc < 21: sessao = "AMERICANA 🇺🇸 (NY)"
+        agora_utc = datetime.now(timezone.utc)
+        agora_ny = agora_utc.astimezone(tz_ny)
+        agora_london = agora_utc.astimezone(tz_london)
+        agora_tokyo = agora_utc.astimezone(tz_tokyo)
+        
+        # 1. Identificar Sessão Atual (Lógica baseada em horário local do mercado)
+        # Londres: 08:00 - 16:00
+        # NY: 08:00 - 17:00
+        # Tóquio: 09:00 - 18:00 (JST)
+        
+        is_london = 8 <= agora_london.hour < 16
+        is_ny = 8 <= agora_ny.hour < 17
+        is_tokyo = 9 <= agora_tokyo.hour < 18
+        
+        if is_london and is_ny: sessao = "SOBREPOSIÇÃO 🇪🇺/🇺🇸 (Overlap)"
+        elif is_london: sessao = "EUROPEIA 🇪🇺 (Londres)"
+        elif is_ny: sessao = "AMERICANA 🇺🇸 (NY)"
+        elif is_tokyo: sessao = "ASIÁTICA 🇯🇵 (Tóquio)"
         else: sessao = "FECHAMENTO/PRE-ASIA 💤"
 
-        # 2. Calcular Máxima e Mínima da Ásia (00:00 às 08:00 UTC do dia atual)
-        # Filtramos o DataFrame para pegar apenas as velas desse intervalo
+        # 2. Calcular Range Asiático (Referência UTC para consistência de dados)
+        # Usamos 00:00 às 08:00 UTC como padrão de mercado para o range da Ásia
         df_hoje = df[df.index.date == agora_utc.date()]
         df_asia = df_hoje[(df_hoje.index.hour >= 0) & (df_hoje.index.hour < 8)]
         
@@ -39,7 +58,7 @@ class ForexBot:
             preco_atual = df['Close'].iloc[-1]
             
             # 3. Lógica de Viés (Londres abriu?)
-            if hora_utc >= 8:
+            if agora_utc.hour >= 8:
                 if preco_atual > max_asia:
                     contexto_msg += f"\n⚠️ Contexto: Preço ACIMA do topo da Ásia ({max_asia:.5f}). Viés Comprador 🟢"
                 elif preco_atual < min_asia:
@@ -74,6 +93,7 @@ class ForexBot:
             print(f"🖼️  Gráfico atualizado: {nome_fig}")
             print("\n👉 Pressione [ENTER] para novo relatório ou aguarde o Radar...")
         except Exception as e:
+            logger.error(f"Erro ao gerar relatório completo para {self.par}: {e}", exc_info=True)
             print(f"❌ Erro no relatório: {e}")
 
     def atualizar_radar(self):
@@ -114,6 +134,7 @@ class ForexBot:
                 sys.stdout.flush()
                 
             except Exception as e:
-                # Se quiser ver o erro para debugar, pode descomentar a linha abaixo:
-                # print(f"Erro no radar: {e}")
-                pass
+                # Agora tratamos o erro explicitamente para evitar falhas silenciosas
+                logger.error(f"Erro no Radar para {self.par}: {e}")
+                sys.stdout.write(f"\r📡 [{datetime.now().strftime('%H:%M:%S')}] ERRO no Radar: {str(e)[:50]}...       ")
+                sys.stdout.flush()
