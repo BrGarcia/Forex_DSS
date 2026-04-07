@@ -10,6 +10,10 @@ Com o motor de análise técnica, fundamental e o suporte multi-par operando per
 2. **Interface em Tempo Real (HTMX):** Criar o dashboard web dinâmico conforme o `IMPLEMENTACAO_FRONTEND.MD`.
 3. **Gráficos Interativos:** Implementar `Lightweight Charts` para visualizar as entradas e indicadores de forma fluída.
 4. **Motor Fundamental Real:** Evoluir o `FundamentalAnalyzer` para buscar notícias de um feed real (Investing.com ou similar via Scraper).
+5. **Índice de Confiança Sniper (0-100%):** Implementar um score de confluência ponderada que transforme a decisão binária em uma escala de probabilidade:
+    - **90% - 100%:** Compra de Alta Confiança (Confluência Máxima).
+    - **45% - 55%:** Zona Neutra (Aguardar Confirmação).
+    - **0% - 10%:** Venda de Alta Confiança (Exaustão de Compradores).
 
 ## Por que este é o próximo passo?
 

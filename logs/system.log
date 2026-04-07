@@ -1,0 +1,26 @@
+2026-04-06 19:22:35 | INFO     | forex_dss | ForexBot inicializado para monitorar: E, U, R, U, S, D
+2026-04-06 19:24:30 | INFO     | forex_dss | ForexBot inicializado para monitorar: EURUSD, GBPUSD, USDJPY, AUDUSD
+2026-04-06 19:24:32 | ERROR    | forex_dss | Erro no Radar para EURUSD: 'EMA_200'
+2026-04-06 19:24:32 | ERROR    | forex_dss | Erro no Radar para GBPUSD: 'EMA_200'
+2026-04-06 19:24:33 | ERROR    | forex_dss | Erro no Radar para USDJPY: 'EMA_200'
+2026-04-06 19:24:33 | ERROR    | forex_dss | Erro no Radar para AUDUSD: 'EMA_200'
+2026-04-06 19:25:00 | INFO     | forex_dss | ForexBot inicializado para monitorar: EURUSD, GBPUSD, USDJPY, AUDUSD
+2026-04-06 19:25:33 | ERROR    | forex_dss | Erro no Radar para EURUSD: 'EMA_200'
+2026-04-06 19:25:33 | ERROR    | forex_dss | Erro no Radar para GBPUSD: 'EMA_200'
+2026-04-06 19:25:34 | ERROR    | forex_dss | Erro no Radar para USDJPY: 'EMA_200'
+2026-04-06 19:25:34 | ERROR    | forex_dss | Erro no Radar para AUDUSD: 'EMA_200'
+2026-04-06 19:26:11 | INFO     | forex_dss | ForexBot inicializado para monitorar: EURUSD, GBPUSD, USDJPY, AUDUSD
+2026-04-06 19:26:34 | ERROR    | forex_dss | Erro no Radar para EURUSD: 'EMA_200'
+2026-04-06 19:26:34 | ERROR    | forex_dss | Erro no Radar para GBPUSD: 'EMA_200'
+2026-04-06 19:26:35 | ERROR    | forex_dss | Erro no Radar para USDJPY: 'EMA_200'
+2026-04-06 19:26:35 | ERROR    | forex_dss | Erro no Radar para AUDUSD: 'EMA_200'
+2026-04-06 19:27:35 | ERROR    | forex_dss | Erro no Radar para EURUSD: 'EMA_200'
+2026-04-06 19:27:35 | ERROR    | forex_dss | Erro no Radar para GBPUSD: 'EMA_200'
+2026-04-06 19:27:36 | ERROR    | forex_dss | Erro no Radar para USDJPY: 'EMA_200'
+2026-04-06 19:27:36 | ERROR    | forex_dss | Erro no Radar para AUDUSD: 'EMA_200'
+2026-04-06 19:28:36 | ERROR    | forex_dss | Erro no Radar para EURUSD: 'EMA_200'
+2026-04-06 19:28:36 | ERROR    | forex_dss | Erro no Radar para GBPUSD: 'EMA_200'
+2026-04-06 19:28:37 | ERROR    | forex_dss | Erro no Radar para USDJPY: 'EMA_200'
+2026-04-06 19:28:37 | ERROR    | forex_dss | Erro no Radar para AUDUSD: 'EMA_200'
+2026-04-06 19:33:26 | INFO     | forex_dss | ForexBot inicializado para monitorar: EURUSD, GBPUSD, USDJPY, AUDUSD
+2026-04-07 05:45:29 | INFO     | forex_dss | ForexBot inicializado para monitorar: EURUSD, GBPUSD, USDJPY, AUDUSD

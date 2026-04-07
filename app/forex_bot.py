@@ -167,9 +167,9 @@ class ForexBot:
 
         for par in self.pares:
             try:
-                # 1. Busca os dados mais recentes (Otimizado: menos histórico para o radar)
+                # 1. Busca os dados mais recentes (Necessário histórico suficiente para EMA 200)
                 alimentador = PriceDataFeed(par)
-                df = alimentador.obter_historico_velas(periodo="2d", intervalo="15m")
+                df = alimentador.obter_historico_velas(periodo="59d", intervalo="15m")
                 analista = TechnicalAnalyzer(df)
                 df_tec = analista.calcular_indicadores()
                 
