@@ -167,12 +167,14 @@ class ForexBot:
             # Obtém o contexto de sessão
             contexto = self.obter_contexto_sessao(df_tec, par_alvo)
             
-            # NOVO: Alerta Fundamental
-            alerta_fund = self.analista_fundamental.verificar_alerta_proximo(par_alvo)
-            
+            # Calendário Econômico completo do dia
+            calendario = self.analista_fundamental.listar_eventos_do_dia(par_alvo)
+            alerta_imediato = self.analista_fundamental.verificar_alerta_proximo(par_alvo)
+
             print("-" * 50)
             print(contexto)
-            print(f"📰 Notícias: {alerta_fund}")
+            print(calendario)
+            print(f"🚨 Alerta Imediato: {alerta_imediato}")
             print("-" * 50)
             print(analista.gerar_resumo_atual())
 
