@@ -45,29 +45,40 @@ class TechnicalAnalyzer:
         bb_superior = ultima_vela[col_bbu]
         
         # --- 1. Tendência (EMAs) ---
-        if ema_20 > ema_200:
+        is_uptrend = ema_20 > ema_200
+        if is_uptrend:
             tendencia = "ALTA 🟢 (EMA Curta acima da Longa)"
         else:
             tendencia = "BAIXA 🔴 (EMA Curta abaixo da Longa)"
             
-        # --- 2. Momento (RSI) ---
+        # --- 2. Contextualizando Momento (RSI) com a Tendência ---
         if rsi > 70:
-            condicao_rsi = f"SOBRECOMPRADO 🔴 ({rsi:.2f})"
+            condicao_rsi = f"SOBRECOMPRADO 🔴 ({rsi:.2f} - Risco de Recuo)"
         elif rsi < 30:
-            condicao_rsi = f"SOBREVENDIDO 🟢 ({rsi:.2f})"
+            condicao_rsi = f"SOBREVENDIDO 🟢 ({rsi:.2f} - Potencial Reversão/Pullback)"
         else:
-            condicao_rsi = f"NEUTRO ⚪ ({rsi:.2f})"
+            # RSI entre 30 e 70: Contextualiza com a tendência principal
+            if is_uptrend and rsi >= 45:
+                condicao_rsi = f"FORÇA COMPRADORA 🟢 ({rsi:.2f} - A favor da tendência)"
+            elif not is_uptrend and rsi <= 55:
+                condicao_rsi = f"FORÇA VENDEDORA 🔴 ({rsi:.2f} - A favor da tendência)"
+            else:
+                condicao_rsi = f"MOMENTO FRACO ⚪ ({rsi:.2f} - Contra a tendência macro)"
 
         # --- 3. Volatilidade (Bollinger Bands) ---
         # Adicionamos uma margem minúscula (0.05%) para considerar que "tocou" na banda
         margem = fechamento * 0.0005 
         
         if fechamento <= (bb_inferior + margem):
-            condicao_bb = f"TOCANDO BANDA INFERIOR 🟢 (Preço esticado para baixo)"
+            condicao_bb = f"BANDA INFERIOR 🟢 (Preço baixo, desconto para compra)"
         elif fechamento >= (bb_superior - margem):
-            condicao_bb = f"TOCANDO BANDA SUPERIOR 🔴 (Preço esticado para cima)"
+            condicao_bb = f"BANDA SUPERIOR 🔴 (Preço alto, risco de exaustão)"
         else:
-            condicao_bb = f"DENTRO DAS BANDAS ⚪ (Volatilidade normal)"
+            # Contextualiza: se tá no meio da banda, tem espaço para correr.
+            if is_uptrend:
+                condicao_bb = f"ESPAÇO LIVRE 🟢 (Longe da banda superior, alvo p/ cima)"
+            else:
+                condicao_bb = f"ESPAÇO LIVRE 🔴 (Longe da banda inferior, alvo p/ baixo)"
 
         # --- Formatação do Painel ---
         resumo = f"""

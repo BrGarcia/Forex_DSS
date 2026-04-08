@@ -22,11 +22,14 @@ class Config:
     DB_PATH = DATA_DIR / "trading_system.db"
     LOG_FILE = LOG_DIR / "system.log"
 
-    # --- 2. CREDENCIAIS DA CORRETORA (MetaTrader 5) ---
+    # --- 2. CREDENCIAIS DA CORRETORA (MetaTrader 5 & APIs) ---
     # Nunca coloque senhas reais aqui. O código busca do sistema/ambiente.
     MT5_LOGIN = int(os.getenv("MT5_LOGIN", 0)) # Retorna 0 se não achar
     MT5_PASSWORD = os.getenv("MT5_PASSWORD", "")
     MT5_SERVER = os.getenv("MT5_SERVER", "")
+    
+    # TwelveData API (Fornece dados confiáveis e rápidos de preço s/ timeouts)
+    TWELVEDATA_API_KEY = os.getenv("TWELVEDATA_API_KEY", "")
     
     # --- 3. PARÂMETROS DE TRADING (Estratégia) ---
     SYMBOL = "EURUSD"       # Par padrão

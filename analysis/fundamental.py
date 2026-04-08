@@ -38,6 +38,21 @@ class FundamentalAnalyzer:
         ]
         return eventos_ficticios
 
+    def minutos_ate_proximo_evento(self, par: str) -> int:
+        """
+        Retorna o mínimo de minutos até o próximo evento de alto impacto
+        para as moedas do par. Usado pelo PercentualIndicator (componente 'news').
+        Retorna 1000 quando não há eventos relevantes na janela.
+        """
+        moeda1 = par[:3]
+        moeda2 = par[3:6]
+        eventos = self.obter_proximos_eventos()
+        mins_list = [
+            ev["minutes_to"] for ev in eventos
+            if ev["currency"] in [moeda1, moeda2] and ev["impact"] == "HIGH"
+        ]
+        return int(min(mins_list)) if mins_list else 1000
+
     def verificar_alerta_proximo(self, par: str) -> str:
         """Verifica se há notícia de alto impacto para as moedas do par nos próximos 30-60 min."""
         moeda1 = par[:3]

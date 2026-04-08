@@ -35,5 +35,5 @@ ENV/
 data/*.csv
 data/*.json
 database.db
-# *.log
+*.log
 analise_grafica_*.png
