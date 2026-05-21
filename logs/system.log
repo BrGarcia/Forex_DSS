@@ -55,3 +55,11 @@
 2026-04-08 11:08:47 | WARNING  | forex_dss | FundamentalAnalyzer: falha ao carregar https://nfs.faireconomy.media/ff_calendar_nextweek.json → 404 Client Error: Not Found for url: https://nfs.faireconomy.media/ff_calendar_nextweek.json
 2026-04-08 14:29:35 | INFO     | forex_dss | FundamentalAnalyzer: 91 eventos carregados de https://nfs.faireconomy.media/ff_calendar_thisweek.json
 2026-04-08 14:29:36 | WARNING  | forex_dss | FundamentalAnalyzer: falha ao carregar https://nfs.faireconomy.media/ff_calendar_nextweek.json → 404 Client Error: Not Found for url: https://nfs.faireconomy.media/ff_calendar_nextweek.json
+2026-04-08 14:30:46 | INFO     | forex_dss | ForexBot inicializado para monitorar: EURUSD
+2026-04-08 14:30:50 | INFO     | forex_dss | FundamentalAnalyzer: 91 eventos carregados de https://nfs.faireconomy.media/ff_calendar_thisweek.json
+2026-04-08 14:30:53 | WARNING  | forex_dss | FundamentalAnalyzer: falha ao carregar https://nfs.faireconomy.media/ff_calendar_nextweek.json → 404 Client Error: Not Found for url: https://nfs.faireconomy.media/ff_calendar_nextweek.json
+2026-05-21 09:56:52 | INFO     | forex_dss | ForexBot inicializado para monitorar: EURUSD
+2026-05-21 09:56:52 | INFO     | forex_dss | Realizando backup diário 59d para EURUSD...
+2026-05-21 09:56:53 | INFO     | forex_dss | Backup gravado em data/EURUSD_59d_20260521.csv
+2026-05-21 09:56:58 | INFO     | forex_dss | FundamentalAnalyzer: 117 eventos carregados de https://nfs.faireconomy.media/ff_calendar_thisweek.json
+2026-05-21 09:56:59 | WARNING  | forex_dss | FundamentalAnalyzer: falha ao carregar https://nfs.faireconomy.media/ff_calendar_nextweek.json → 404 Client Error: Not Found for url: https://nfs.faireconomy.media/ff_calendar_nextweek.json
