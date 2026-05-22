@@ -14,11 +14,18 @@ class TechnicalAnalyzer:
         self.df.ta.ema(length=20, append=True)
         self.df.ta.ema(length=200, append=True)
         
-        # NOVO: Calcula as Bandas de Bollinger (20 períodos, 2 Desvios Padrão)
+        # Bandas de Bollinger (20 períodos, 2 Desvios Padrão)
         self.df.ta.bbands(length=20, std=2, append=True)
 
-        # NOVO: Calcula o ATR (Average True Range) para volatilidade
+        # ATR (Average True Range) para volatilidade
         self.df.ta.atr(length=14, append=True)
+        
+        # NOVO: ADX para força da tendência
+        self.df.ta.adx(length=14, append=True)
+        
+        # NOVO: Bollinger Band Width para compressão
+        self.df.ta.bbands(length=20, std=2, append=True) # redundante mas garante se bbands mudar
+        # pandas_ta já adiciona BBB_20_2.0 quando bbands é calculado
         
         self.df.dropna(inplace=True)
         return self.df

@@ -5,6 +5,13 @@ import pytz
 from data_feeds.price_api import PriceDataFeed
 from analysis.technical import TechnicalAnalyzer
 from analysis.charting import ChartGenerator
+from analysis.candlestick import detect_patterns
+from analysis.levels import (
+    build_levels, nearest_level, calculate_asian_range, 
+    classify_price_vs_asian_range, detect_level_rejection
+)
+from analysis.market_regime import classify_market_regime
+from analysis.multi_timeframe import MultiTimeframeAnalyzer
 from strategy.signal_generator import SignalGenerator
 from strategy.percentual_indicator import PercentualIndicator
 from analysis.fundamental import FundamentalAnalyzer
@@ -13,6 +20,7 @@ from shared.logger import logger
 from shared.config import Config
 
 import json
+import pandas as pd
 
 class ForexBot:
     def __init__(self, pares=None):
@@ -101,23 +109,15 @@ class ForexBot:
         return "fechamento"
 
     def obter_contexto_sessao(self, df, par="EURUSD"):
-        """Identifica a sessão atual usando fusos horários reais (NY e Londres)"""
-        # ... (mesmo código anterior, mas com o par no log se necessário)
-        # [MANTIDO O CÓDIGO DE TIMEZONES]
-        # Fusos horários de referência
-        tz_ny = pytz.timezone('America/New_York')
+        """Identifica a sessão atual e o range asiático usando a nova lógica de níveis."""
+        tz_ny     = pytz.timezone('America/New_York')
         tz_london = pytz.timezone('Europe/London')
-        tz_tokyo = pytz.timezone('Asia/Tokyo')
+        tz_tokyo  = pytz.timezone('Asia/Tokyo')
         
         agora_utc = datetime.now(timezone.utc)
         agora_ny = agora_utc.astimezone(tz_ny)
         agora_london = agora_utc.astimezone(tz_london)
         agora_tokyo = agora_utc.astimezone(tz_tokyo)
-        
-        # 1. Identificar Sessão Atual (Lógica baseada em horário local do mercado)
-        # Londres: 08:00 - 16:00
-        # NY: 08:00 - 17:00
-        # Tóquio: 09:00 - 18:00 (JST)
         
         is_london = 8 <= agora_london.hour < 16
         is_ny = 8 <= agora_ny.hour < 17
@@ -129,30 +129,123 @@ class ForexBot:
         elif is_tokyo: sessao = "ASIÁTICA 🇯🇵 (Tóquio)"
         else: sessao = "FECHAMENTO/PRE-ASIA 💤"
 
-        # 2. Calcular Range Asiático (Referência UTC para consistência de dados)
-        # Usamos 00:00 às 08:00 UTC como padrão de mercado para o range da Ásia
-        df_hoje = df[df.index.date == agora_utc.date()]
-        df_asia = df_hoje[(df_hoje.index.hour >= 0) & (df_hoje.index.hour < 8)]
-        
         contexto_msg = f"Sessão Atual: {sessao}"
         
-        if not df_asia.empty:
-            max_asia = df_asia['High'].max()
-            min_asia = df_asia['Low'].min()
+        # Calcular Range Asiático usando o módulo de níveis
+        asian_range = calculate_asian_range(df)
+        if asian_range.get("has_range"):
+            max_asia = asian_range["high"]
+            min_asia = asian_range["low"]
             preco_atual = df['Close'].iloc[-1]
+            status = classify_price_vs_asian_range(preco_atual, asian_range)
             
-            # 3. Lógica de Viés (Londres abriu?)
-            if agora_utc.hour >= 8:
-                if preco_atual > max_asia:
-                    contexto_msg += f"\n⚠️ Contexto: Preço ACIMA do topo da Ásia ({max_asia:.5f}). Viés Comprador 🟢"
-                elif preco_atual < min_asia:
-                    contexto_msg += f"\n⚠️ Contexto: Preço ABAIXO do fundo da Ásia ({min_asia:.5f}). Viés Vendedor 🔴"
-                else:
-                    contexto_msg += f"\n⚠️ Contexto: Preço dentro do Range da Ásia. Consolidação ⏸️"
+            if status == "above_range":
+                contexto_msg += f"\n⚠️ Contexto: Preço ACIMA do topo da Ásia ({max_asia:.5f}). Viés Comprador 🟢"
+            elif status == "below_range":
+                contexto_msg += f"\n⚠️ Contexto: Preço ABAIXO do fundo da Ásia ({min_asia:.5f}). Viés Vendedor 🔴"
             else:
-                contexto_msg += f"\n📊 Range Ásia em formação: Máx {max_asia:.5f} | Mín {min_asia:.5f}"
+                contexto_msg += f"\n⚠️ Contexto: Preço dentro do Range da Ásia. Consolidação ⏸️"
         
         return contexto_msg
+
+    def _formatar_qualidade_dados(self, quality_report: dict) -> str:
+        """Formata o diagnóstico de qualidade dos candles para o relatório."""
+        if not quality_report:
+            return "Qualidade dos Dados: não informada"
+
+        status = "OK" if quality_report.get("is_valid") else "ATENÇÃO"
+        candle_status = "fechado" if quality_report.get("closed_candles_only", True) else "tempo real"
+        linhas = [
+            f"Qualidade dos Dados: {status}",
+            f"Candle analisado  : {candle_status}",
+            f"Candles usados    : {quality_report.get('filtered_rows', quality_report.get('rows', 0))}",
+        ]
+
+        issues = quality_report.get("raw_issues") or quality_report.get("issues") or []
+        if issues:
+            linhas.append(f"Alertas          : {'; '.join(issues)}")
+
+        return "\n".join(linhas)
+
+    def _formatar_leitura_candlestick(self, df: pd.DataFrame) -> str:
+        """Detecta e formata padrões de candlestick para o relatório."""
+        patterns = detect_patterns(df)
+        if not patterns:
+            return "🕯️  Padrões Candlestick: Nenhum padrão relevante detectado no candle atual."
+        
+        main_p = patterns[0]
+        out = f"🕯️  Padrão Principal  : {main_p.name.upper()} ({main_p.direction}) - Força: {main_p.strength:.2f}\n"
+        out += f"📝 Motivo            : {main_p.reason}"
+        
+        if len(patterns) > 1:
+            out += f"\n➕ Outros padrões    : {', '.join([p.name for p in patterns[1:]])}"
+            
+        return out
+
+    def _formatar_niveis_proximos(self, df: pd.DataFrame) -> str:
+        """Identifica níveis de suporte/resistência e reações neles."""
+        levels = build_levels(df)
+        if not levels:
+            return "🎯  Níveis de Preço  : Nenhum nível relevante identificado recentemente."
+            
+        preco_atual = df['Close'].iloc[-1]
+        near = nearest_level(preco_atual, levels)
+        
+        out = f"🎯  Nível mais Próximo: {near.price:.5f} ({near.kind.upper()})\n"
+        
+        # Verificar se houve rejeição no último candle
+        rejection = detect_level_rejection(df.iloc[-1], near)
+        if rejection["rejected"]:
+            out += f"⚡ Reação Detectada : REJEIÇÃO {rejection['direction'].upper()} (Força: {rejection['strength']:.2f})"
+        else:
+            is_jpy = any("JPY" in str(par) for par in self.pares)
+            dist_pips = abs(preco_atual - near.price) * (100 if is_jpy else 10000)
+            out += f"📍 Distância Atual  : {dist_pips:.1f} pips do nível"
+            
+        return out
+
+    def _formatar_regime_mercado(self, df: pd.DataFrame, mins_to_news: int) -> str:
+        """Classifica e formata o regime de mercado para o relatório."""
+        regime = classify_market_regime(df, mins_to_news)
+        
+        icon = {
+            "strong_trend": "🚀",
+            "weak_trend": "📈",
+            "range": "↔️",
+            "compression": "🗜️",
+            "high_volatility": "🌪️",
+            "pre_news": "📢"
+        }.get(regime.label, "❓")
+        
+        out = f"{icon}  Regime de Mercado: {regime.label.upper()}\n"
+        out += f"📊 Tendência        : {regime.trend_direction.upper()} (Força: {regime.trend_strength:.2f})\n"
+        out += f"🌪️ Volatilidade      : {regime.volatility_label.upper()}\n"
+        out += f"📝 Justificativa    : {regime.reason}"
+        
+        return out
+
+    def _formatar_mtf(self, df_m15: pd.DataFrame, par: str) -> str:
+        """Executa e formata a análise multi-timeframe."""
+        try:
+            alimentador = PriceDataFeed(par)
+            # Buscar dados H1 e H4
+            df_h1 = alimentador.obter_historico_velas(periodo="5d", intervalo="1h")
+            df_h4 = alimentador.obter_historico_velas(periodo="10d", intervalo="4h")
+            
+            # Preparar indicadores
+            df_h1 = TechnicalAnalyzer(df_h1).calcular_indicadores()
+            df_h4 = TechnicalAnalyzer(df_h4).calcular_indicadores()
+            
+            analyzer = MultiTimeframeAnalyzer({"15m": df_m15, "1h": df_h1, "4h": df_h4})
+            mtf = analyzer.run()
+            
+            icon = "✅" if "aligned" in mtf.alignment else "⚠️"
+            out = f"{icon}  MTF Alignment     : {mtf.alignment.upper()} (Score: {mtf.alignment_score:.2f})\n"
+            for tf, analysis in mtf.analyses.items():
+                out += f"   • {tf.upper()}: {analysis.trend.upper()} | {analysis.regime}\n"
+            return out.strip()
+        except Exception as e:
+            return f"⚠️  MTF Analysis    : Falha ao carregar timeframes superiores ({e})"
 
     def exibir_relatorio_completo(self, par=None):
         par_alvo = par if par else self.pares[0]
@@ -172,9 +265,19 @@ class ForexBot:
             alerta_imediato = self.analista_fundamental.verificar_alerta_proximo(par_alvo)
 
             print("-" * 50)
+            print(self._formatar_qualidade_dados(alimentador.last_quality_report))
+            print("-" * 50)
             print(contexto)
             print(calendario)
             print(f"🚨 Alerta Imediato: {alerta_imediato}")
+            print("-" * 50)
+            print(self._formatar_leitura_candlestick(df_tec))
+            print("-" * 50)
+            print(self._formatar_niveis_proximos(df_tec))
+            print("-" * 50)
+            print(self._formatar_regime_mercado(df_tec, self.analista_fundamental.minutos_ate_proximo_evento(par_alvo)))
+            print("-" * 50)
+            print(self._formatar_mtf(df_tec, par_alvo))
             print("-" * 50)
             print(analista.gerar_resumo_atual())
 
@@ -203,7 +306,8 @@ class ForexBot:
             print(resumo_sinal)
             
             nome_fig = f"analise_grafica_{par_alvo}.png"
-            ChartGenerator(df_tec, par_alvo).salvar_grafico(filename=nome_fig)
+            levels_for_chart = build_levels(df_tec)
+            ChartGenerator(df_tec, par_alvo).salvar_grafico(filename=nome_fig, levels=levels_for_chart)
             print(f"🖼️  Gráfico atualizado: {nome_fig}")
             print("\n👉 Pressione [ENTER] para novo relatório ou aguarde o Radar...")
         except Exception as e:

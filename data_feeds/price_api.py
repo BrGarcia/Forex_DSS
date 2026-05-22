@@ -3,6 +3,7 @@ import pandas as pd
 import requests
 from shared.config import Config
 from shared.logger import logger
+from shared.utils import filtrar_candles_fechados, normalizar_ohlc, validar_ohlc
 
 class PriceDataFeed:
     """
@@ -16,6 +17,7 @@ class PriceDataFeed:
         self.ticker_td = f"{symbol[:3]}/{symbol[3:]}" # twelvedata: EUR/USD
         self.td_api_key = Config.TWELVEDATA_API_KEY
         self.use_td = bool(self.td_api_key)
+        self.last_quality_report = {}
 
     def obter_cotacao_atual(self) -> float:
         """
@@ -109,12 +111,48 @@ class PriceDataFeed:
             if 'Dividends' in df.columns:
                 df.drop(columns=['Dividends', 'Stock Splits'], inplace=True, errors='ignore')
                 
-        # Normalização Universal do Fuso Horário para UTC (evita bugs cross-API de timezone)
         if not df.empty:
-            if df.index.tz is not None:
-                df.index = df.index.tz_convert('UTC')
-            else:
-                df.index = df.index.tz_localize('UTC')
+            raw_report = validar_ohlc(df, intervalo=intervalo)
+            if not raw_report["is_valid"]:
+                logger.warning(
+                    f"Qualidade OHLC suspeita para {self.symbol_raw}: "
+                    f"{'; '.join(raw_report['issues'])}"
+                )
+
+            df = normalizar_ohlc(df)
+
+            if getattr(Config, "USE_CLOSED_CANDLES_ONLY", True):
+                before = len(df)
+                df = filtrar_candles_fechados(df, intervalo=intervalo)
+                removed = before - len(df)
+                if removed:
+                    logger.debug(
+                        f"{self.symbol_raw}: {removed} candle(s) aberto(s) removido(s) "
+                        f"para análise em {intervalo}."
+                    )
+
+            clean_report = validar_ohlc(df, intervalo=intervalo)
+            self.last_quality_report = {
+                **clean_report,
+                "raw_rows": raw_report["rows"],
+                "filtered_rows": len(df),
+                "raw_issues": raw_report["issues"],
+                "closed_candles_only": getattr(Config, "USE_CLOSED_CANDLES_ONLY", True),
+            }
+        else:
+            self.last_quality_report = {
+                "is_valid": False,
+                "issues": ["Histórico vazio."],
+                "rows": 0,
+                "duplicate_timestamps": 0,
+                "invalid_ohlc_rows": 0,
+                "gap_count": 0,
+                "missing_columns": [],
+                "raw_rows": 0,
+                "filtered_rows": 0,
+                "raw_issues": ["Histórico vazio."],
+                "closed_candles_only": getattr(Config, "USE_CLOSED_CANDLES_ONLY", True),
+            }
                 
         return df
 

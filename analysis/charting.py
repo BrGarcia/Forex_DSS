@@ -1,15 +1,22 @@
 import mplfinance as mpf
 import pandas as pd
+from typing import List, Optional
+from analysis.levels import PriceLevel
+from analysis.candlestick import CandlePattern
 
 class ChartGenerator:
     """
-    Recebe um DataFrame enriquecido e desenha o gráfico com EMAs, RSI e Bollinger Bands.
+    Recebe um DataFrame enriquecido e desenha o gráfico com EMAs, RSI, Bollinger Bands,
+    níveis de suporte/resistência e sinalização de padrões.
     """
     def __init__(self, df: pd.DataFrame, symbol: str):
         self.df = df
         self.symbol = symbol
 
-    def salvar_grafico(self, filename: str = "grafico_analise.png", velas_visiveis: int = 100):
+    def salvar_grafico(self, filename: str = "grafico_analise.png", 
+                       velas_visiveis: int = 100, 
+                       levels: Optional[List[PriceLevel]] = None,
+                       patterns: Optional[List[CandlePattern]] = None):
         df_zoom = self.df.tail(velas_visiveis).copy()
         
         # Pega as colunas das Bandas dinamicamente
@@ -29,7 +36,19 @@ class ChartGenerator:
             mpf.make_addplot(df_zoom['RSI_14'], color='purple', panel=1, ylabel='RSI (14)')
         ]
         
+        # 4. Adicionar Níveis (Hlines)
+        hlines_data = []
+        hlines_colors = []
+        if levels:
+            for lvl in levels:
+                hlines_data.append(lvl.price)
+                hlines_colors.append('green' if lvl.kind == "support" else 'red')
+        
         estilo = mpf.make_mpf_style(base_mpf_style='yahoo', gridstyle=':')
+        
+        # 5. Signalizacao de Padroes (Marcadores no grafico)
+        # Por enquanto, apenas o ultimo se houver patterns e estiver no zoom
+        # (Futura melhoria: marcar todos os fractais)
         
         mpf.plot(
             df_zoom,
@@ -37,6 +56,7 @@ class ChartGenerator:
             style=estilo,
             addplot=indicadores_visuais,
             volume=False,
+            hlines=dict(hlines=hlines_data, colors=hlines_colors, linestyle='-.', alpha=0.5),
             title=f"\nAnálise Técnica: {self.symbol} (M15)",
             ylabel='Preço',
             figsize=(12, 8),

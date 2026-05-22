@@ -51,6 +51,9 @@ class Config:
     # Modo Live = True (Dinheiro Real/Demo na Corretora)
     # Modo Live = False (Backtest ou Simulação Offline)
     LIVE_MODE = False 
+
+    # Usa apenas candles fechados para indicadores/sinais.
+    USE_CLOSED_CANDLES_ONLY = True
     
     # Nível de Log (DEBUG mostra tudo, INFO mostra só o principal)
     LOG_LEVEL = "DEBUG" 
